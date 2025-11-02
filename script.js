@@ -51,6 +51,7 @@ const translations = {
     form_submit: "Send Message",
     footer_copyright: "© 2025 B.Georgiev (bojkata120). All rights reserved.",
     footer_subtitle: "SoftUni Python Graduate | Full Stack Developer",
+    form_success: "Thank you for your message! I will get back to you soon.",
   },
   bg: {
     nav_home: "Начало",
@@ -77,7 +78,7 @@ const translations = {
     skills_title: "Умения и Експертиза",
     skill_web_title: "Уеб Разработка",
     skill_web_desc:
-      "Създаване на отзивчиви, модерни уебсайтове с HTML, CSS, JavaScript и различни框架",
+      "Създаване на отзивчиви, модерни уебсайтове с HTML, CSS, JavaScript и различни frameworks",
     skill_python_title: "Python Програмиране",
     skill_python_desc:
       "Сертифициран Python разработчик от SoftUni с опит в автоматизация, скриптове и backend разработка",
@@ -104,11 +105,34 @@ const translations = {
     form_submit: "Изпрати Съобщение",
     footer_copyright: "© 2025 Б.Георгиев (bojkata120). Всички права запазени.",
     footer_subtitle: "SoftUni Python Завършил | Full Stack Разработчик",
+    form_success: "Благодаря за съобщението! Ще се свържа с вас скоро.",
   },
 };
 
 // Current language state
 let currentLang = "en";
+let typingInterval = null;
+
+// Typing effect for hero subtitle
+function typeWriterEffect(element, text) {
+  // Clear any existing interval
+  if (typingInterval) {
+    clearTimeout(typingInterval);
+  }
+
+  element.textContent = "";
+  let i = 0;
+
+  function typeChar() {
+    if (i < text.length) {
+      element.textContent += text.charAt(i);
+      i++;
+      typingInterval = setTimeout(typeChar, 30);
+    }
+  }
+
+  typeChar();
+}
 
 // Language switcher functionality
 function switchLanguage() {
@@ -122,11 +146,16 @@ function switchLanguage() {
 function updateLanguage() {
   const lang = translations[currentLang];
 
-  // Update elements with data-translate attribute
+  // Update elements with data-translate attribute (except hero subtitle)
   document.querySelectorAll("[data-translate]").forEach((element) => {
     const key = element.getAttribute("data-translate");
     if (lang[key]) {
-      element.innerHTML = lang[key];
+      // Special handling for hero subtitle with typing effect
+      if (key === "hero_subtitle") {
+        typeWriterEffect(element, lang[key]);
+      } else {
+        element.innerHTML = lang[key];
+      }
     }
   });
 
@@ -219,11 +248,8 @@ document.querySelectorAll(".skill-card").forEach((el) => observer.observe(el));
 // Form submission
 document.querySelector(".contact-form").addEventListener("submit", (e) => {
   e.preventDefault();
-  const successMessage =
-    currentLang === "en"
-      ? "Thank you for your message! I will get back to you soon."
-      : "Благодаря за съобщението! Ще се свържа с вас скоро.";
-  alert(successMessage);
+  const lang = translations[currentLang];
+  alert(lang.form_success);
   e.target.reset();
 });
 
@@ -261,21 +287,15 @@ window.addEventListener("scroll", () => {
   });
 });
 
-// Typing effect for hero subtitle
-const subtitle = document.querySelector(".hero-subtitle");
-const text = subtitle.textContent;
-subtitle.textContent = "";
-let i = 0;
+// Initial typing effect on page load
+document.addEventListener("DOMContentLoaded", () => {
+  const subtitle = document.querySelector(".hero-subtitle");
+  const initialText = translations[currentLang].hero_subtitle;
 
-function typeWriter() {
-  if (i < text.length) {
-    subtitle.textContent += text.charAt(i);
-    i++;
-    setTimeout(typeWriter, 50);
-  }
-}
-
-setTimeout(typeWriter, 1000);
+  setTimeout(() => {
+    typeWriterEffect(subtitle, initialText);
+  }, 1000);
+});
 
 // Scroll reveal animation
 const revealElements = document.querySelectorAll(".fade-in, .skill-card");
